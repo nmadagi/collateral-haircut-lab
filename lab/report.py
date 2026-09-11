@@ -10,8 +10,8 @@ from lab.book import label
 # core pdf fonts are latin-1 only; map the usual unicode suspects and
 # replace anything else rather than crash on an odd character
 _CHAR_MAP = str.maketrans({
-    "‘": "'", "’": "'", "“": '"', "”": '"',
-    "–": "-", "—": "-", "…": "...", " ": " ",
+    "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+    "\u2013": "-", "\u2014": "-", "\u2026": "...", "\u00a0": " ",
 })
 
 

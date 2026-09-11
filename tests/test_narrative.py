@@ -55,8 +55,8 @@ def test_generate_falls_back_without_key(parts, monkeypatch):
 
 
 def test_humanize_strips_dashes():
-    assert "—" not in narrative.humanize("a — b – c")
-    assert narrative.humanize("x ’y’") == "x 'y'"
+    assert "\u2014" not in narrative.humanize("a \u2014 b \u2013 c")
+    assert narrative.humanize("x \u2019y\u2019") == "x 'y'"
 
 
 def test_money_formats():

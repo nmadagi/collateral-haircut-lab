@@ -41,8 +41,8 @@ def pct(x):
 
 # dashes and curly quotes read as machine-written; swap them for plain
 # punctuation before anything reaches the screen
-_DASHES = str.maketrans({"—": ",", "–": ",", "‘": "'",
-                         "’": "'", "“": '"', "”": '"'})
+_DASHES = str.maketrans({"\u2014": ",", "\u2013": ",", "\u2018": "'",
+                         "\u2019": "'", "\u201c": '"', "\u201d": '"'})
 
 
 def humanize(text):
@@ -207,7 +207,7 @@ def llm_narrative(payload, api_key):
     client = anthropic.Anthropic(api_key=api_key)
     msg = client.messages.create(
         model="claude-sonnet-5",
-        max_tokens=700,
+        max_tokens=1000,
         messages=[{"role": "user",
                    "content": PROMPT.format(facts=_facts_block(payload))}],
     )
