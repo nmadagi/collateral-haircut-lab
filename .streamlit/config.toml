@@ -1,0 +1,4 @@
+[server]
+# the hosted file watcher can die on the inotify limit and then serve
+# stale modules after a push; polling uses no inotify handles
+fileWatcherType = "poll"
