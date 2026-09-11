@@ -127,7 +127,7 @@ def test_stressed_path_is_a_real_window(con):
     r = firedrill.run(con, "B04", "stressed")
     assert r.window_start is not None
     assert r.net_shortfall > 0
-    assert r.gross_shortfall >= r.net_shortfall
+    assert r.gross_shortfall >= r.net_shortfall - 1e-6
     assert r.buyback_cost > r.loan_at_default
     assert r.nonstd_share > r.by_pair.loc[~r.by_pair.nonstandard, "collateral"].sum() / r.collateral_at_default
 

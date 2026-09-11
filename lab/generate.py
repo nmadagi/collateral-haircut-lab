@@ -26,6 +26,7 @@ N_DAYS = 756                      # three trading years
 END_DATE = "2025-12-31"
 STRESS_START, STRESS_END = 330, 372   # day indices of the planted episode
 T_DF = 5                          # student t degrees of freedom for shocks
+SHOCK_CLIP = 5.0                  # winsorize shocks at five standard deviations
 
 # factor volatilities (daily) in calm markets and the stress multiplier
 FACTOR_VOL = {"equity": 0.0100, "rates": 0.0025, "credit": 0.0030}
@@ -52,9 +53,12 @@ LOADINGS = {
 
 
 def _t_shocks(rng, size):
-    """Unit-variance student t draws."""
+    """Unit-variance student t draws, clipped. Five degrees of freedom
+    gives fat tails; the clip stops a single draw producing a one-day
+    move no real market has ever printed."""
     scale = np.sqrt((T_DF - 2) / T_DF)
-    return rng.standard_t(T_DF, size=size) * scale
+    return np.clip(rng.standard_t(T_DF, size=size) * scale,
+                   -SHOCK_CLIP, SHOCK_CLIP)
 
 
 def generate_prices(seed=SEED):
