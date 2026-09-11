@@ -135,6 +135,7 @@ def backtest(con):
 
 def summary(bt):
     return {
+        "n_pairs": int(len(bt)),
         "n_windows": int(bt["n_windows"].iloc[0]),
         "expected_per_pair": float(bt["expected"].iloc[0]),
         "flat_exceed": int(bt["flat_exceed"].sum()),
