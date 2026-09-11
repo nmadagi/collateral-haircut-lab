@@ -30,7 +30,10 @@ and scaled to the borrower's mix exactly.
 
 Three years of business days ending 31 December 2025. Three common
 factors (equity, rates, credit) with Student t shocks (5 degrees of
-freedom, scaled to unit variance) so tails are fat. Each class index
+freedom, scaled to unit variance) so tails are fat, clipped at five
+standard deviations so no single draw prints a one-day move larger than
+any real market has. The largest one-day equity move in the history is
+about 7% for large caps and 9% for small caps. Each class index
 loads on the factors:
 
 | class | equity | rates | credit | own noise |
@@ -53,7 +56,7 @@ A stress episode is planted from day 330 to day 372 (six weeks in the
 second year): factor volatility doubles, equities drift down 0.6% a day,
 credit 0.2% a day, Treasuries drift up 0.1% a day. On the seed used,
 large cap equities fall about 25 to 30% over the episode, high yield
-about 17%, Treasuries gain about 3%. The seed was chosen from a scan so
+about 14 to 17%, Treasuries gain about 3%. The seed was chosen from a scan so
 the episode reads like 2020, not 1929.
 
 The as-of day (the last day) carries an added rally shock: equity factor

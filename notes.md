@@ -48,6 +48,11 @@ Running notes to myself, roughly in order.
   than an EWMA. A requirement that jumps every day is not something a
   client accepts. The cost is a lag at the onset of the stress, which
   is why two equity pairs sit amber. Left on screen on purpose.
+- Found a 12.8% one-day gain in large caps outside the planted episode,
+  a single Student t draw about ten standard deviations out. No real
+  index has printed that. Shocks are now clipped at five sigma. The
+  fire drill's worst window moved from that freak day to the rebound
+  inside the planted crash, which is where it should have been.
 - The LLM reply was cut off at 700 tokens once the facts block grew.
   Raised to 1000. The number check still passes on the first try.
 

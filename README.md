@@ -11,9 +11,9 @@ backtest a VaR. It is a synthetic agency lending book: twelve
 borrowers, four lent asset classes, five collateral classes, three years
 of daily prices with a planted stress episode, marked every day against
 the requirement and the limits. On this book the flat schedule is beaten
-159 times where 55 would be expected at 99%, red on both equity-versus-
+156 times where 55 would be expected at 99%, red on both equity-versus-
 cash pairs and never once on Treasuries. Scaling the haircut to the
-volatility of each pair brings the count to 56 and needs $101 million
+volatility of each pair brings the count to 54 and needs $205 million
 less collateral. The cushion is in the wrong places, not too small.
 
 All data is synthetic. No real institution, no real client, no real
