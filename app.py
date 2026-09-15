@@ -14,7 +14,7 @@ import streamlit as st
 
 from lab import exposure, firedrill, haircut, narrative, report
 from lab.book import (BORROWERS, CONFIDENCE, HORIZON_DAYS, LOOKBACK_DAYS,
-                      label)
+                      label, short_label)
 from lab.load import as_of_dates, build_db
 
 st.set_page_config(page_title="collateral haircut lab", layout="wide")
@@ -214,7 +214,7 @@ with tab_bt:
          f"{usd(bt_sum['scaled_required'])} scaled")
 
     st.subheader("Exceedances per pair, flat schedule vs volatility scaled")
-    names = [f"{label(l)} vs {label(c)}" for l, c in
+    names = [f"{short_label(l)}<br>vs {short_label(c)}" for l, c in
              zip(bt["loan_class"], bt["coll_class"])]
     fig = go.Figure()
     fig.add_trace(go.Bar(x=names, y=bt["flat_exceed"], name="flat schedule",
@@ -228,7 +228,7 @@ with tab_bt:
     fig.update_layout(barmode="group", height=420,
                       margin=dict(l=10, r=10, t=10, b=10),
                       yaxis=dict(title="exceedances", rangemode="tozero"),
-                      xaxis=dict(tickangle=-25),
+                      xaxis=dict(tickangle=0, title="lent vs held"),
                       legend=dict(orientation="h", y=1.08))
     st.plotly_chart(fig, use_container_width=True)
     st.caption(
