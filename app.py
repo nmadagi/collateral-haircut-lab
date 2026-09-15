@@ -291,10 +291,24 @@ with tab_drill:
          f"gross {usd(drill.gross_shortfall)} before netting")
     card(c4, "Non-standard collateral", f"{drill.nonstd_share:.0%}",
          f"cap {cap:.0%}", alert=drill.nonstd_share > cap)
+    def _moves(side):
+        return ", ".join(f"{label(c)} {v:+.1%}" if v else f"{label(c)} 0.0%"
+                         for c, v in drill.class_moves[side].items())
+    gap = (f"a gap of {usd(drill.net_shortfall)}" if drill.net_shortfall > 0
+           else "no gap after netting")
     if drill.window_start is not None:
-        st.caption(f"Stressed window opens {drill.window_start.strftime('%d %b %Y')}: "
-                   "every class is moved together over those two days, the "
-                   "window chosen is the one that hurts this mix the most.")
+        why = (f"Stressed window opens "
+               f"{drill.window_start.strftime('%d %b %Y')}, the worst two "
+               "days in the history for this borrower's mix, every class "
+               f"moved together. Over those two days what {drill.name} "
+               f"borrowed moved {_moves('lent')}, and what it posted moved "
+               f"{_moves('held')}. ")
+    else:
+        why = ("Orderly close out: today's prices, less the cost of selling "
+               "or buying a whole basket at once. ")
+    st.caption((why + f"Buying back costs {usd(drill.buyback_cost)}, "
+                f"selling the collateral raises {usd(drill.proceeds)} after "
+                f"selling costs, {gap}.").replace("$", "\\$"))
 
     st.subheader("Close out by collateral class")
     bc = drill.by_collateral
