@@ -41,6 +41,17 @@ def bn(x):
     return x / 1000
 
 
+def card(col, title, value, note=None, alert=False):
+    """A metric with a plain note under it. st.metric's delta draws an up
+    arrow, which reads as "up since yesterday" on a label that is not a
+    change at all, so the note is a caption instead."""
+    col.metric(title, value)
+    if note:
+        # escape dollars, streamlit reads $...$ in markdown as latex
+        text = note.replace("$", "\\$")
+        col.caption(f":red[{text}]" if alert else text)
+
+
 @st.cache_resource
 def get_db():
     con, results = build_db()
@@ -94,17 +105,17 @@ tab_exp, tab_bt, tab_drill = st.tabs([
 # ------------------------------------------------------------ exposure
 with tab_exp:
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("On loan", usd(totals["on_loan"]))
-    c2.metric("Collateral held", usd(totals["collateral"]),
-              delta=f"{totals['coverage']:.1%} coverage", delta_color="off")
-    c3.metric("Margin calls this morning",
-              f"{totals['n_margin_calls']} borrowers",
-              delta=usd(totals["margin_call_total"]), delta_color="inverse")
-    c4.metric("Limit and cap breaches",
-              f"{totals['n_limit_breaches'] + totals['n_nonstd_breaches']}",
-              delta=f"{totals['n_limit_breaches']} exposure, "
-                    f"{totals['n_nonstd_breaches']} non-standard collateral",
-              delta_color="off")
+    card(c1, "On loan", usd(totals["on_loan"]))
+    card(c2, "Collateral held", usd(totals["collateral"]),
+         f"{totals['coverage']:.1%} coverage")
+    card(c3, "Margin calls this morning",
+         f"{totals['n_margin_calls']} borrowers",
+         f"{usd(totals['margin_call_total'])} to collect today",
+         alert=totals["n_margin_calls"] > 0)
+    card(c4, "Limit and cap breaches",
+         f"{totals['n_limit_breaches'] + totals['n_nonstd_breaches']}",
+         f"{totals['n_limit_breaches']} exposure limit, "
+         f"{totals['n_nonstd_breaches']} non-standard collateral cap")
 
     st.subheader("On loan against exposure limit, by borrower")
     plot = summary.sort_values("on_loan")
@@ -172,18 +183,16 @@ with tab_exp:
 with tab_bt:
     saved = bt_sum["flat_required"] - bt_sum["scaled_required"]
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Flat schedule exceedances", bt_sum["flat_exceed"],
-              delta=f"{bt_sum['flat_red']} pairs red", delta_color="inverse")
-    c2.metric("Scaled haircut exceedances", bt_sum["scaled_exceed"],
-              delta=f"{bt_sum['scaled_red']} pairs red", delta_color="inverse")
-    c3.metric("Expected at 99%",
-              f"{round(bt_sum['expected_per_pair'] * bt_sum['n_pairs'])}",
-              delta=f"{bt_sum['n_windows']} windows x {bt_sum['n_pairs']} pairs",
-              delta_color="off")
-    c4.metric("Collateral saved by scaling", usd(saved),
-              delta=f"{usd(bt_sum['flat_required'])} flat, "
-                    f"{usd(bt_sum['scaled_required'])} scaled",
-              delta_color="off")
+    card(c1, "Flat schedule exceedances", bt_sum["flat_exceed"],
+         f"{bt_sum['flat_red']} pairs red", alert=bt_sum["flat_red"] > 0)
+    card(c2, "Scaled haircut exceedances", bt_sum["scaled_exceed"],
+         f"{bt_sum['scaled_red']} pairs red", alert=bt_sum["scaled_red"] > 0)
+    card(c3, "Expected at 99%",
+         f"{round(bt_sum['expected_per_pair'] * bt_sum['n_pairs'])}",
+         f"{bt_sum['n_windows']} windows x {bt_sum['n_pairs']} pairs")
+    card(c4, "Collateral saved by scaling", usd(saved),
+         f"{usd(bt_sum['flat_required'])} flat, "
+         f"{usd(bt_sum['scaled_required'])} scaled")
 
     st.subheader("Exceedances per pair, flat schedule vs volatility scaled")
     names = [f"{label(l)} vs {label(c)}" for l, c in
@@ -256,14 +265,13 @@ with tab_drill:
     drill = firedrill.run(con, pick, path)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("On loan at default", usd(drill.loan_at_default))
-    c2.metric("Collateral at default", usd(drill.collateral_at_default))
-    c3.metric("Net shortfall (indemnity pays)", usd(drill.net_shortfall),
-              delta=f"gross {usd(drill.gross_shortfall)} before netting",
-              delta_color="off")
-    c4.metric("Non-standard collateral", f"{drill.nonstd_share:.0%}",
-              delta=f"cap {BORROWERS[pick]['nonstd_cap']:.0%}",
-              delta_color="off")
+    cap = BORROWERS[pick]["nonstd_cap"]
+    card(c1, "On loan at default", usd(drill.loan_at_default))
+    card(c2, "Collateral at default", usd(drill.collateral_at_default))
+    card(c3, "Net shortfall (indemnity pays)", usd(drill.net_shortfall),
+         f"gross {usd(drill.gross_shortfall)} before netting")
+    card(c4, "Non-standard collateral", f"{drill.nonstd_share:.0%}",
+         f"cap {cap:.0%}", alert=drill.nonstd_share > cap)
     if drill.window_start is not None:
         st.caption(f"Stressed window opens {drill.window_start.strftime('%d %b %Y')}: "
                    "every class is moved together over those two days, the "
