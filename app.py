@@ -22,6 +22,7 @@ st.set_page_config(page_title="collateral haircut lab", layout="wide")
 ACCENT = "#1f5c8b"
 RED = "#b03a2e"
 GREY = "#7f8c8d"
+DARK = "#2c3e50"
 GREEN = "#27ae60"
 AMBER = "#e67e22"
 ZONE_COLOR = {"green": GREEN, "amber": AMBER, "red": RED}
@@ -130,21 +131,36 @@ with tab_exp:
     fig = go.Figure()
     fig.add_trace(go.Bar(
         x=bn(plot["on_loan"]), y=plot["name"], orientation="h",
-        marker_color=colors, name="on loan"))
-    fig.add_trace(go.Scatter(
-        x=bn(plot["limit"]), y=plot["name"], mode="markers",
-        marker=dict(symbol="line-ns", size=22, color="#2c3e50",
-                    line=dict(width=2, color="#2c3e50")),
-        name="exposure limit"))
-    fig.update_layout(height=420, margin=dict(l=10, r=10, t=10, b=10),
+        marker_color=colors, showlegend=False,
+        hovertemplate="%{y}: $%{x:.2f}B on loan<extra></extra>"))
+    # the bar colour is the status, so the legend names the three statuses
+    for status, color in [("clean", ACCENT), ("near a limit or cap", AMBER),
+                          ("action today", RED)]:
+        fig.add_trace(go.Bar(x=[None], y=[None], orientation="h",
+                             marker_color=color, name=status))
+    fig.add_trace(go.Scatter(x=[None], y=[None], mode="lines",
+                             line=dict(color=DARK, width=2),
+                             name="exposure limit"))
+    # a marker symbol drifted off its row, so each limit is a line drawn
+    # inside that borrower's own category slot
+    for i, lim in enumerate(plot["limit"]):
+        fig.add_shape(type="line", xref="x", yref="y", x0=bn(lim),
+                      x1=bn(lim), y0=i - 0.42, y1=i + 0.42,
+                      line=dict(color=DARK, width=2))
+    xmax = bn(max(plot["limit"].max(), plot["on_loan"].max())) * 1.05
+    fig.update_layout(height=440, barmode="overlay",
+                      margin=dict(l=10, r=10, t=10, b=10),
                       xaxis=dict(title="USD billions", tickprefix="$",
-                                 ticksuffix="B", rangemode="tozero"),
-                      legend=dict(orientation="h", y=-0.15))
+                                 ticksuffix="B", range=[0, xmax]),
+                      yaxis=dict(categoryorder="array",
+                                 categoryarray=list(plot["name"])),
+                      legend=dict(orientation="h", y=-0.18))
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("Blue is clean. Amber is within 10% of a limit or cap. Red "
-               "needs a decision today: a margin call, a limit breach or too "
-               "much non-standard collateral. The dark tick is the "
-               "borrower's exposure limit.")
+    st.caption("Bar colour is today's status. Blue is clean. Amber is within "
+               "10% of a limit or cap. Red needs a decision today: a margin "
+               "call, a limit breach or too much non-standard collateral. "
+               "The dark tick on each row is that borrower's exposure limit; "
+               "a bar past its tick is over the limit.")
 
     st.subheader("Morning exposure report")
     rep = summary.merge(stress[["borrower_id", "net_shortfall"]],
@@ -165,7 +181,10 @@ with tab_exp:
         "Stress shortfall": rep["net_shortfall"].map(usd),
         "Status": rep["status"],
     })
-    st.dataframe(table, hide_index=True, use_container_width=True)
+    st.dataframe(table, hide_index=True, use_container_width=True,
+                 column_config={
+                     "Borrower": st.column_config.TextColumn(width="medium"),
+                     "Status": st.column_config.TextColumn(width="large")})
     st.caption(
         "Required is the flat house schedule weighted across the borrower's "
         "collateral. Excess is what it holds above that after today's move; "
