@@ -47,6 +47,18 @@ def label(cls):
     return ASSET_CLASSES[cls]["label"]
 
 
+# short names for chart axes, where the full label does not fit
+SHORT_LABEL = {
+    "cash": "Cash", "ust": "Treasuries", "ig_corp": "IG bonds",
+    "hy_corp": "High yield", "us_large_eq": "Large cap",
+    "us_small_eq": "Small cap",
+}
+
+
+def short_label(cls):
+    return SHORT_LABEL[cls]
+
+
 # the flat house schedule: one number per collateral type, whatever is
 # lent against it and whatever the market is doing. 102 for cash and
 # treasuries, 105 for everything else, which is the industry convention

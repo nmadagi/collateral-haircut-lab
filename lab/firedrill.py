@@ -67,6 +67,10 @@ class DrillResult:
     gross_shortfall: float       # sum of pair shortfalls, no netting
     net_shortfall: float         # what the indemnity actually pays
     nonstd_share: float
+    # price change of each class over the close out, as a fraction:
+    # {"lent": {class: move}, "held": {class: move}}, biggest position
+    # first. zero everywhere on the orderly path
+    class_moves: dict
 
 
 def _pair_book(con, borrower_id):
@@ -132,6 +136,13 @@ def run(con, borrower_id, path="stressed", ratios=None):
     buyback = float(pair["buyback"].sum())
     proceeds = float(pair["proceeds"].sum())
     coll = float(pair["collateral"].sum())
+    lent = pair.groupby("loan_class")["loan"].sum().sort_values(ascending=False)
+    held = pair.groupby("coll_class")["collateral"].sum().sort_values(
+        ascending=False)
+    class_moves = {
+        "lent": {c: float(move[(c, "loan")]) - 1.0 for c in lent.index},
+        "held": {c: float(move[(c, "collateral")]) - 1.0 for c in held.index},
+    }
     return DrillResult(
         borrower_id=borrower_id, name=name, path=path, window_start=window,
         by_pair=pair, by_collateral=by_coll,
@@ -142,6 +153,7 @@ def run(con, borrower_id, path="stressed", ratios=None):
         net_shortfall=max(0.0, buyback - proceeds),
         nonstd_share=float(pair.loc[pair.nonstandard, "collateral"].sum() / coll)
         if coll else 0.0,
+        class_moves=class_moves,
     )
 
 

@@ -141,3 +141,19 @@ def test_netting_never_exceeds_gross(con):
 def test_unknown_borrower_raises(con):
     with pytest.raises(KeyError):
         firedrill.run(con, "B99")
+
+
+def test_class_moves_explain_the_shortfall(con):
+    r = firedrill.run(con, "B04", "stressed")
+    assert set(r.class_moves["lent"]) == set(r.by_pair["loan_class"])
+    assert set(r.class_moves["held"]) == set(r.by_pair["coll_class"])
+    # what was lent rose more than what was held, which is why it lost
+    assert max(r.class_moves["lent"].values()) > max(r.class_moves["held"].values())
+    assert r.class_moves["held"]["cash"] == 0.0
+    orderly = firedrill.run(con, "B04", "orderly")
+    assert all(v == 0.0 for side in orderly.class_moves.values()
+               for v in side.values())
+
+
+def test_short_labels_cover_every_class():
+    assert set(book.SHORT_LABEL) == set(book.ASSET_CLASSES)
