@@ -352,6 +352,8 @@ with tab_drill:
     elif not api_key and os.path.exists(app_path):
         with open(app_path, "rb") as f:
             api_key = tomllib.load(f).get("ANTHROPIC_API_KEY")
+    if os.environ.get("LAB_OFFLINE"):
+        api_key = None  # tests and screenshots, no network call
     payload = narrative.build_payload(summary, totals, bt_sum, drill, as_of)
     text, source = make_narrative(json.dumps(payload), api_key)
     # streamlit treats $...$ as latex, which mangles dollar amounts
